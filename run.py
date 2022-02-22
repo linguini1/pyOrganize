@@ -2,7 +2,6 @@
 __author__ = "Matteo Golin"
 
 # Imports
-from pprint import pprint  # Convenient for debugging JSOn
 from commands import parser, SUBCOMMMAND
 from functions.configure import start_config, wipe_config, add_dir, remove_dir, remove_tag, LABELS, DISPLAY
 from functions.watch import WatchDir
@@ -13,11 +12,6 @@ passed_args = vars(args)  # Dictionary version to prevent lookup error
 
 if args.wipe:
     wipe_config()
-
-# Variables to be set by the user (manually set for testing)
-# args.home = "C:/Users/golin/Downloads/testSorted"
-# args.watch = "C:/Users/golin/Downloads/testDir"
-# args.i = "!"
 
 # Start up config
 conf = start_config(args.home, args.watch, args.i)
@@ -39,8 +33,6 @@ if passed_args.get(SUBCOMMMAND) == "remove-tag":
 # Displaying information
 if passed_args.get(SUBCOMMMAND) == "display":
     DISPLAY[passed_args.get("selection")](conf)  # Calls corresponding display function
-
-# pprint(conf)
 
 # File save event logic
 if __name__ == "__main__" and not passed_args.get("subcommand"):  # Doesn't run when configurations are being done
