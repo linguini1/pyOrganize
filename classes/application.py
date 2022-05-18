@@ -49,7 +49,10 @@ class Application:
 
         if self.config.ignore_char not in file_path:
             chosen_directory = self.get_best_dir(file_path)
-            chosen_directory.nest_file(file_path)
+
+            # If there are 0 matching tags, do not move the file
+            if not chosen_directory.matching_tags(file_path) == 0:
+                chosen_directory.nest_file(file_path)
 
     def update_config(self, commandline_args: dict):
 
@@ -128,7 +131,7 @@ class Application:
             # Create a directory object for each directory
             Directory(
                 path=directory_path,
-                tags=data[directory_path]["tags"]
+                tags=data["directories"][directory_path]["tags"]
             )
 
         # Return a configurations object

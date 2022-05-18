@@ -19,7 +19,7 @@ class Config:
         self.ignored_names = ignored_names
         self.ignore_char = ignore_char
 
-    def save(self, directories: dict[str, dict]):
+    def save(self, directories: dict):
 
         """Save all directories to the config file."""
 
@@ -32,7 +32,7 @@ class Config:
                 "directories": directories,
             }
 
-            json.dump(data, config)
+            json.dump(data, config, default=lambda o: o.to_JSON())  # Lambda allows classes to be serialized
 
     def delete(self):
 
@@ -42,4 +42,7 @@ class Config:
         os.remove(f"{current_directory}\\{self.filename}")
 
     def __repr__(self):
-        return f"Root: {self.root_dir} Watch: {self.watch_dir}"
+        representation = f"Watch: {self.watch_dir} Ignore Character: {self.ignore_char}\nIgnored Names:\n"
+        for name in self.ignored_names:
+            representation += f"{name}\n"
+        return f"Config(\n{representation})"

@@ -6,24 +6,33 @@ import argparse
 import commands.validators as v
 
 # Constants
-DESCRIPTION = ""
+HELP_STATEMENTS = {
+    "parser": None,
+    "subcommands": None,
+    "add-directory": "Adds a directory or multiple directories to the configurations file. If directory already exists"
+                     "in config file, the tags are updated accordingly.",
+    "initial-sort": "Runs an initial sort in the watched directory.",
+    "console": "Starts the console interface at runtime.",
+    "config": "Creates a new configurations file. This overwrites any existing configurations.",
+    "mod-config": "Allows modification of the configurations file.",
+}
 
 # Parsers
-parser = argparse.ArgumentParser(description=DESCRIPTION)
-subparsers = parser.add_subparsers(dest="subcommand")
+parser = argparse.ArgumentParser(description=HELP_STATEMENTS["parser"])
+subparsers = parser.add_subparsers(dest="subcommand", help=HELP_STATEMENTS["subcommands"])
 
 # Main commands
 
 # Sub commands
 
 # Console interface commands
-console_options = subparsers.add_parser("console")
+console_options = subparsers.add_parser("console", help=HELP_STATEMENTS["console"])
 
 # Initial sort
-initial_sort = subparsers.add_parser("initial-sort")
+initial_sort = subparsers.add_parser("initial-sort", help=HELP_STATEMENTS["initial-sort"])
 
 # Create config commands
-set_config = subparsers.add_parser("config")
+set_config = subparsers.add_parser("config", help=HELP_STATEMENTS["config"])
 
 set_config.add_argument(
     "watch-dir",
@@ -45,7 +54,7 @@ set_config.add_argument(
 )
 
 # Modify config commands
-modify_config = subparsers.add_parser("mod-config")
+modify_config = subparsers.add_parser("mod-config", help=HELP_STATEMENTS["mod-config"])
 
 modify_config.add_argument(
     "-watch-dir", "-w",
@@ -65,7 +74,7 @@ modify_config.add_argument(
 )
 
 # Add directory
-add_directory = subparsers.add_parser("add-directory")
+add_directory = subparsers.add_parser("add-directory", help=HELP_STATEMENTS["add-directory"])
 
 add_directory.add_argument(
     "path",

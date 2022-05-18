@@ -5,7 +5,6 @@ __author__ = "Matteo Golin"
 
 # Imports
 import os
-import typing
 from utils.logging import log_file_movement
 
 # Types
@@ -89,8 +88,17 @@ class Directory:
 
         """Nests the passed file within itself."""
 
-        filename = file_path.split("\\")[-1]
-        new_path = f"{self.path}\\{filename}"
+        file = file_path.split("\\")[-1]
+        file_name, file_ext = file.split(".")
+
+        # Increase counter on filename if file already exists in directory
+        counter = 1
+        counted_file_name = file_name
+        while os.path.exists(f"{self.path}\\{counted_file_name}.{file_ext}"):
+            counted_file_name = f"{file_name} ({counter})"
+            counter += 1
+
+        new_path = f"{self.path}\\{counted_file_name}.{file_ext}"
         os.rename(file_path, new_path)
 
         # Logging
@@ -102,7 +110,7 @@ class Directory:
 
         matching_tags = 0
         for tag in self.tags:
-            if tag in filename:
+            if tag in filename.lower():
                 matching_tags += 1
 
         return matching_tags
@@ -111,11 +119,12 @@ class Directory:
         return f"{self.path} <{self.tags}>"
 
     # Properties
-    @property
-    def to_json(self) -> dict[str, typing.Any]:
+    def to_JSON(self):
 
-        """Returns the JSON formatting of the directory to be used in the config file."""
+        """JSON serialization."""
 
-        return {
+        representation = {
             "tags": list(self.tags),
         }
+
+        return representation

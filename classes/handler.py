@@ -24,9 +24,9 @@ class WatchDir:
 
         # Initial sort logic
         if initial_sort:
-            for directory, _, files in os.walk(self.app.config.watch_dir):
-                for file in files:
-                    file_path = f"{self.app.config.watch_dir}\\{file}"
+            for file in os.listdir(self.app.config.watch_dir):
+                file_path = f"{self.app.config.watch_dir}\\{file}"
+                if os.path.isfile(file_path):
                     self.app.sort_file(file_path)
 
         try:

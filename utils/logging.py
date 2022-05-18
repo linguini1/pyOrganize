@@ -20,6 +20,8 @@ def log_file_movement(old_path: str, new_path: str):
 
     """Logs the movement of a file."""
 
-    info = f"{old_path} was moved to {new_path}."
+    file_name = old_path.split("\\")[-1]
+
+    info = f"{file_name} was moved from {old_path.replace(file_name, '')} to {new_path.replace(file_name, '')}"
     print(info)
     write_to_log(info)
