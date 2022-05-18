@@ -1,115 +1,95 @@
-# Command line argument parsing
+# Commands for command line input
 __author__ = "Matteo Golin"
 
 # Imports
 import argparse
+import commands.validators as v
 
 # Constants
-SUBCOMMMAND = "subcommand"  # Subcommand tag
-DESCRIPTION = "Configure the sorter's settings."
+DESCRIPTION = ""
 
+# Parsers
 parser = argparse.ArgumentParser(description=DESCRIPTION)
-subparser = parser.add_subparsers(dest=SUBCOMMMAND)
+subparsers = parser.add_subparsers(dest="subcommand")
 
-# Sort as soon as the program is run
-parser.add_argument(
-    "--sort",
-    help="Sorts the watched directory on program run.",
-    action="store_true"
+# Main commands
+
+# Sub commands
+
+# Console interface commands
+console_options = subparsers.add_parser("console")
+
+# Initial sort
+initial_sort = subparsers.add_parser("initial-sort")
+
+# Create config commands
+set_config = subparsers.add_parser("config")
+
+set_config.add_argument(
+    "watch-dir",
+    help="Sets the directory that should be watched by the sorter.",
+    type=v.Directory,
 )
 
-# Clear all configurations
-parser.add_argument(
-    "--wipe",
-    help="Clears all previous configurations.",
-    action="store_true"
+set_config.add_argument(
+    "ignore-char",
+    default="!",
+    help="Sets the character to be included in filenames that should be ignored by the sorter.",
+    type=v.Char,
 )
 
-# Set the home directory
-parser.add_argument(
-    "-home",
-    help="Sets the home directory where files will be sent to be sorted. This directory should nest all sorted "
-         "subdirectories.",
-    type=str,
-    metavar="path"
+set_config.add_argument(
+    "ignored-names",
+    nargs="*",
+    help="Sets a list of directory names that should be ignored by the sorter when indexing.",
 )
 
-# Set the watched directory
-parser.add_argument(
-    "-watch",
-    help="Sets the directory that will be watched for files to be sorted.",
-    metavar="path",
-    type=str,
+# Modify config commands
+modify_config = subparsers.add_parser("mod-config")
+
+modify_config.add_argument(
+    "-watch-dir", "-w",
+    help="Resets the directory that should be watched by the sorter.",
+    type=v.Directory,
 )
 
-# Set the ignore symbol
-parser.add_argument(
-    "-i",
-    help="Sets the symbol that denotes a file which shouldn't be moved from the watched directory.",
-    type=str,
-    metavar="symbol"
+modify_config.add_argument(
+    "-ignore-char", "-i",
+    help="Resets the character to be included in filenames that should be ignored by the sorter.",
 )
 
-# Add a directory to the directory list
-dir_adder = subparser.add_parser(
-    "add",
-    description="Adds a directory and its tags to the list of directories in use. If the directory is already in use, "
-                "it will add the passed tags to the proper directory.",
+modify_config.add_argument(
+    "-ignored-names", "-in",
+    help="Appends a list of directory names that should be ignored by the sorter when indexing to the config file.",
+    nargs="*",
 )
 
-dir_adder.add_argument(
-    "directory",
-    help="Specifies the directory to be added.",
-    type=str,
-    metavar="directory"
+# Add directory
+add_directory = subparsers.add_parser("add-directory")
+
+add_directory.add_argument(
+    "path",
+    help="Path of directory to be added.",
+    type=v.Directory,
 )
 
-dir_adder.add_argument(
+add_directory.add_argument(
     "tags",
-    help="Specifies a list of tags to be associated with the directory.",
-    type=str,
-    nargs="+",
-    metavar="tag"
+    default=list(),
+    help="List of tags associated with the directory.",
+    nargs="*",
 )
 
-# Remove a directory from the directory list
-dir_remover = subparser.add_parser("remove-dir")
-
-dir_remover.add_argument(
-    "directories",
-    help="Takes the name of one or more directories to be removed from the list of directories in use.",
-    nargs="+",
-    metavar="directory"
+add_directory.add_argument(
+    "-recursive-tags", "-rt",
+    default=False,
+    help="Adds tags recursively to all subdirectories of the added directory.",
+    action="store_true",
 )
 
-# Remove a tag from the tag list or from a specific directory
-tag_remover = subparser.add_parser(
-    "remove-tag",
-    description="Removes a tag for all directories or specified directories."
-)
-
-tag_remover.add_argument(
-    "tag",
-    help="The tag that will be removed.",
-    type=str,
-    nargs=1,
-    metavar="tag",
-)
-
-tag_remover.add_argument(
-    "-d",
-    help="Specifies directories from which the tag is to be removed.",
-    nargs="+",  # Multiple directories can be specified
-    metavar="directory",
-    type=str
-)
-
-# Show config settings
-display = subparser.add_parser("display")
-
-display.add_argument(
-    "selection",
-    help="Selects which information from the config file should be displayed.",
-    type=str,
-    choices=["tags", "used-dirs", "available-dirs"],
+add_directory.add_argument(
+    "-parent-tags", "-pt",
+    default=False,
+    help="Adds tags from the parent directory to the directory.",
+    action="store_true",
 )

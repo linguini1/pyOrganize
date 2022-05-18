@@ -2,39 +2,50 @@
 __author__ = "Matteo Golin"
 
 # Imports
-from commands import parser, SUBCOMMMAND
-from functions.configure import start_config, wipe_config, add_dir, remove_dir, remove_tag, LABELS, DISPLAY
-from functions.watch import WatchDir
+from classes.application import Application
+from classes.config import Config
+from classes.console import Console
+from classes.directory import Directory
+from classes.handler import WatchDir
+from commands import parser
 
-# Parse arguments
-args = parser.parse_args()
-passed_args = vars(args)  # Dictionary version to prevent lookup error
+# Get arguments
+arguments = parser.parse_args()
+arguments = vars(arguments)  # Convert to dictionary
+subcommand = arguments.get("subcommand")
 
-if args.wipe:
-    wipe_config()
+print(arguments)
 
-# Start up config
-conf = start_config(args.home, args.watch, args.i)
-print("Config file loaded!")
+if subcommand == "config":
+    config = Config(
+        watch_dir=arguments.get("watch-dir"),
+        ignore_char=arguments.get("ignore-char"),
+        ignored_names=arguments.get("ignored-names")
+    )
+    config.save({})
+    print("Config file successfully created.")
+    quit()
 
-# Add and remove required directories
-if passed_args.get(SUBCOMMMAND) == "add":
-    add_dir(args.directory[0], args.tags, conf)
+app = Application()
 
-if passed_args.get(SUBCOMMMAND) == "remove-dir":
-    for dir_name in args.directories:
-        remove_dir(dir_name, conf)
+if subcommand == "add-directory":
+    Directory(
+        path=arguments.get("path"),
+        tags=arguments.get("tags"),
+        recursive=arguments.get("-recursive-tags"),
+        parent_tags=arguments.get("-parent-tags")
+    )
+    app.clean_up()
+    quit()
 
-# Remove tags
-if passed_args.get(SUBCOMMMAND) == "remove-tag":
-    remove_tag(args.tag[0], passed_args.get("d"), conf)
+if subcommand == "mod-config":
+    app.update_config(arguments)
 
-
-# Displaying information
-if passed_args.get(SUBCOMMMAND) == "display":
-    DISPLAY[passed_args.get("selection")](conf)  # Calls corresponding display function
+if subcommand == "console":
+    console = Console(app)
+    console.start()
 
 # File save event logic
-if __name__ == "__main__" and not passed_args.get("subcommand"):  # Doesn't run when configurations are being done
-    watcher = WatchDir(conf)
-    watcher.run(initial_sort=args.sort)
+if __name__ == "__main__":
+    watcher = WatchDir(app)
+    watcher.run(initial_sort=(subcommand == "initial-sort"))

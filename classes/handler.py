@@ -6,30 +6,28 @@ import time
 import os
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from .manipulation import move_file
-from .configure import LABELS
+from .application import Application
 
 
 # Class to watch homed directory
 class WatchDir:
 
-    def __init__(self, config: dict):
-        self.watchDir = config[LABELS["watchedDir"]]
-        self.homeDir = config[LABELS["homeDir"]]
-        self.config = config
+    def __init__(self, app: Application):
+        self.app = app
         self.observer = Observer()
 
     def run(self, initial_sort):
-        event_handler = Handler(self.config, debug=False)  # Custom event handler
+        event_handler = Handler(self.app, debug=False)  # Custom event handler
 
-        self.observer.schedule(event_handler, self.watchDir, recursive=True)
+        self.observer.schedule(event_handler, self.app.config.watch_dir, recursive=True)
         self.observer.start()
 
         # Initial sort logic
         if initial_sort:
-            for directory, _, files in os.walk(self.watchDir):
+            for directory, _, files in os.walk(self.app.config.watch_dir):
                 for file in files:
-                    move_file(f"{directory}/{file}", self.config)
+                    file_path = f"{self.app.config.watch_dir}\\{file}"
+                    self.app.sort_file(file_path)
 
         try:
             while True:
@@ -39,20 +37,21 @@ class WatchDir:
             print("Sorter terminated.")
         finally:
             self.observer.join()
+            self.app.clean_up()
 
 
 class Handler(FileSystemEventHandler):
 
-    def __init__(self, config: dict, debug=False):
+    def __init__(self, app: Application, debug=False):
         super(Handler, self).__init__()
-        self.config = config
+        self.app = app
         self.debug = debug
 
     def on_any_event(self, event):
 
         """
         Creation events can be ignored, as they always trigger a modification event immediately afterwards, which is
-        more important.
+        used as a signal.
         """
 
         # Debugging
@@ -66,8 +65,11 @@ class Handler(FileSystemEventHandler):
 
             # Get filepath
             if event.event_type == "modified":
-                filepath = event.src_path.replace("\\", "/")
+                file_path = event.src_path
             else:
-                filepath = event.dest_path.replace("\\", "/")
+                file_path = event.dest_path
 
-            move_file(filepath, self.config)  # Actually move the file
+            self.app.sort_file(file_path)
+
+        elif event.event_type in ["modified", "moved"] and event.is_directory:
+            pass  # TODO update directory path if an object is moved
